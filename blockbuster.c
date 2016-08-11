@@ -138,6 +138,15 @@ void read_bed_file(char *file)
 	{
 		char c; int header = 0; int sol = 1; 
 		char *line = "";
+		size_t len = strlen(line);
+
+		char *tmp_line = malloc(len + 1 + 1 ); /* one for extra char, one for trailing zero */
+		// copy the empty line to the new allocated memory and append c and "\0" to its end
+		strcpy(tmp_line, line);
+		tmp_line[len] = c;
+   		tmp_line[len + 1] = '\0';
+		
+
 		while((c=getc(f)) != EOF) {
 
 			// if "#" at the beginning of line -> header
@@ -152,7 +161,7 @@ void read_bed_file(char *file)
 
 				if(type == 1){
 					// run through line and split at separator
-					char *p = strtok(line, sep); int i = 0;
+					char *p = strtok(tmp_line, sep); int i = 0;
 					while(p != 0)
 					{
 						if(i == 0){ 
@@ -183,7 +192,7 @@ void read_bed_file(char *file)
 				else if(type == 2){
 					
 					// run through line and split at separator
-					char *p = strtok(line, sep); int i = 0;
+					char *p = strtok(tmp_line, sep); int i = 0;
 					while(p != 0)
 					{
 						if(i == 1){
@@ -277,11 +286,13 @@ void read_bed_file(char *file)
 					strcpy(lastChrom, chrom);
 					lastStrand = realloc(NULL, strlen(strand)+1);
 					strcpy(lastStrand, strand);
-					lastEnd    = end;	
+					lastEnd    = end;
 				}					
 				free(chrom); free(strand); free(id);
 				sol = 1;
-				free(line); line = "";
+				// after processing the line we copy the empty string to the same memory address which we used and so we can start reading the new line
+				strcpy(tmp_line, "");
+				len = strlen(tmp_line);
 			}
 			else if(c == '\n' && header == 1){
 				free(line); line = "";
@@ -291,30 +302,27 @@ void read_bed_file(char *file)
 			
 			// expand line
 			else{
-				line = append(line, c); 
+				// reallocate the memory for the line string so we can include the new character just read and the "\0"
+				tmp_line = realloc(tmp_line, len + 1 + 1); 
+				tmp_line[len] = c;			
+				tmp_line[len + 1] = '\0';
+				len = strlen(tmp_line);
 				sol = 0;
 			}
 		} 
+		
 		assignReadsToBlocks(thisCluster);
 		writeBlocks(thisCluster);
 		freeList(thisCluster);
+		free(tmp_line);
 	}
 	fclose(f);
-}
-
-char *append(char *oldstring, char c)
-{
-    int result;
-    char *newstring;
-    result = asprintf(&newstring, "%s%c", oldstring, c);
-    if (result == -1) newstring = NULL;
-    return newstring;
 }
 
 void writeHeader(char *file)
 {	
 	time_t t;
-    t = time(NULL);
+    	t = time(NULL);
 	printf("# blockbuster result file generated %s# query file: %s\n# scale: %.1f, minblockheight: %i, mergeDistance: %i\n# block_number\tchromosome\tstart_of_block\tend_of_block\tstrand\treadIDs\n", ctime(&t), file, sizescale, minblockheight, merge);
 }
 
@@ -375,7 +383,7 @@ void assignReadsToBlocks(struct read *anchor)
 double gaussian(double x, double mean, double variance)
 /* CALCULATE THE GAUSSIAN */
 {
-	return (1/(variance * sqrt(2 * pi))) * exp(-1 * (pow((x - mean),2))/pow((2 * variance),2));
+	return (1/(variance * sqrt(2 * pi))) * exp(-1 * (pow((x - mean),2))/(2*pow(variance,2)));
 }
  
 
@@ -420,10 +428,17 @@ void writeSuperGaussian(struct read *anchor, double *distrib, int clusterHeight)
 			{
 				double x = mean + i;
 				double y = anchor->height * gaussian(x, mean, variance);
-				if((int) x < clusterHeight) distrib[(int) x] += y;
-				if((int) (mean -i) > 0) distrib[(int)(mean - i)] += y;
-			}						
+				if(i == 0){
+					if (((int) x < clusterHeight) || ((int) (x) > 0)) distrib[(int) x] += y;
+				}
+				else{
+					if((int) x < clusterHeight) distrib[(int) x] += y;
+					if((int) (mean -i) > 0) distrib[(int)(mean - i)] += y;
+				}
+			}					
 		}
+		
+		
 		anchor = anchor->next;
 	}
 }
@@ -602,7 +617,7 @@ void writeBlocks(struct read *anchor)
 				if(thisBlockHeight >= minblockheight && size > 0)
 				{
 					writeBlock++;
-					printf("%i\t%s\t%i\t%i\t%s\t%.2f\t%i\n", writeBlock, clusterChrom, thisBlockStart, thisBlockEnd, clusterStrand, thisBlockHeight, thisBlockTags);
+					printf("\t%i\t%s\t%i\t%i\t%s\t%.2f\t%i\n", writeBlock, clusterChrom, thisBlockStart, thisBlockEnd, clusterStrand, thisBlockHeight, thisBlockTags);
 				}
 			}
 		}
@@ -636,7 +651,7 @@ void writeBlocks(struct read *anchor)
 					{
 						if(start->block == thisBlock)
 						{
-							printf("%s\t%d\t%d\t%s\t%lf\t%s\t%i\n",start->chrom,start->start,start->end,start->id,start->height,start->strand,writeBlock);	
+							printf("\t%s\t%d\t%d\t%s\t%lf\t%s\t%i\n",start->chrom,start->start,start->end,start->id,start->height,start->strand,writeBlock);	
 						}
 						start = start->next;
 					}
