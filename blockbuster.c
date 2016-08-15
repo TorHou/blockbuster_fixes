@@ -246,6 +246,7 @@ void read_bed_file(char *file)
 						}
 						
 						//  linked list for next cluster
+						free(clusterChrom); free(clusterStrand); free(lastChrom); free(lastStrand);
 						freeList(thisCluster);
 						thisCluster = NULL;
 						
@@ -295,7 +296,8 @@ void read_bed_file(char *file)
 				len = strlen(tmp_line);
 			}
 			else if(c == '\n' && header == 1){
-				free(line); line = "";
+				strcpy(tmp_line, "");
+				len = strlen(tmp_line);
 				header = 0;
 				sol = 1;
 			}
@@ -313,6 +315,7 @@ void read_bed_file(char *file)
 		
 		assignReadsToBlocks(thisCluster);
 		writeBlocks(thisCluster);
+		free(clusterChrom); free(clusterStrand); free(lastChrom); free(lastStrand);
 		freeList(thisCluster);
 		free(tmp_line);
 	}
