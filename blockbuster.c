@@ -136,7 +136,7 @@ void read_bed_file(char *file)
 	}
 	else
 	{
-		char c; int header = 0; int sol = 1; 
+		char c = getc(f); int header = 0; int sol = 1; 
 		char *line = "";
 		size_t len = strlen(line);
 
@@ -147,7 +147,7 @@ void read_bed_file(char *file)
    		tmp_line[len + 1] = '\0';
 		
 
-		while((c=getc(f)) != EOF) {
+		do{
 
 			// if "#" at the beginning of line -> header
 			if(c == '#' && sol == 1) header = 1;
@@ -311,7 +311,7 @@ void read_bed_file(char *file)
 				len = strlen(tmp_line);
 				sol = 0;
 			}
-		} 
+		} while((c=getc(f)) != EOF);
 		
 		assignReadsToBlocks(thisCluster);
 		writeBlocks(thisCluster);
