@@ -277,6 +277,11 @@ void read_bed_file(char *file)
 					thisRead->block  = -1;
 					thisRead->next   = thisCluster; 
 					thisCluster      = thisRead; 
+
+	                free(clusterChrom);
+                    free(clusterStrand);
+                    free(lastChrom);
+                    free(lastStrand);
 					
 					clusterChrom = realloc(NULL, strlen(chrom)+1); 
 					strcpy(clusterChrom, chrom);
@@ -288,7 +293,7 @@ void read_bed_file(char *file)
 					strcpy(lastStrand, strand);
 					lastEnd    = end;
 				}					
-				free(chrom); free(strand); free(id);
+				free(chrom); free(strand); free(id); free(info);
 				sol = 1;
 				// after processing the line we copy the empty string to the same memory address which we used and so we can start reading the new line
 				strcpy(tmp_line, "");
@@ -315,7 +320,7 @@ void read_bed_file(char *file)
 		writeBlocks(thisCluster);
 		freeList(thisCluster);
 		free(tmp_line);
-	}
+}
 	fclose(f);
 }
 
@@ -670,10 +675,10 @@ void freeList(struct read *anchor)
 	while (anchor != NULL) 
 	{
 		tmp = anchor->next;
-//		free(anchor->id);
-//		free(anchor->chrom);
-//		free(anchor->strand);
-//		free(anchor->next);
+		free(anchor->id);
+		free(anchor->chrom);
+		free(anchor->strand);
+		//free(anchor->next);
 		free(anchor);
 		anchor = tmp;
 	}
