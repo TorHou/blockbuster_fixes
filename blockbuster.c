@@ -32,8 +32,8 @@ int    clusterEnd = -1;
 double clusterHeight = 0;
 int    readCount = 0;
 int    tagCount = 0;
-char   *clusterChrom = "x";
-char   *clusterStrand = "x";
+char   *clusterChrom = NULL; 
+char   *clusterStrand = NULL;
 int    clusterCounter = 0;
 
 /* USER VARIABLES */
@@ -125,8 +125,10 @@ void read_bed_file(char *file)
 	struct read *thisCluster = NULL;
 	
 	int  lastEnd = -1;
-	char *lastChrom = "x";
-	char *lastStrand = "x";
+	char *lastChrom = malloc(2*sizeof(char));
+	strcpy(lastChrom,"x");
+	char *lastStrand = malloc(2*sizeof(char));
+	strcpy(lastStrand,"x");
 
 	FILE *f;
 	f = fopen(file, "r");
@@ -278,18 +280,13 @@ void read_bed_file(char *file)
 					thisRead->next   = thisCluster; 
 					thisCluster      = thisRead; 
 
-	                free(clusterChrom);
-                    free(clusterStrand);
-                    free(lastChrom);
-                    free(lastStrand);
-					
-					clusterChrom = realloc(NULL, strlen(chrom)+1); 
+					clusterChrom = (char*) realloc(clusterChrom, (strlen(chrom)+1)); 
 					strcpy(clusterChrom, chrom);
-					clusterStrand = realloc(NULL, strlen(strand)+1);
+					clusterStrand = (char*) realloc(clusterStrand, (strlen(strand)+1));
 					strcpy(clusterStrand, strand);
-					lastChrom = realloc(NULL, strlen(chrom)+1); 
+					lastChrom = (char*) realloc(lastChrom, (strlen(chrom)+1)); 
 					strcpy(lastChrom, chrom);
-					lastStrand = realloc(NULL, strlen(strand)+1);
+					lastStrand = (char*) realloc(lastStrand, (strlen(strand)+1));
 					strcpy(lastStrand, strand);
 					lastEnd    = end;
 				}					
