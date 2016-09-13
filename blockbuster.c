@@ -284,9 +284,9 @@ void read_bed_file(char *file)
 					strcpy(clusterChrom, chrom);
 					clusterStrand = (char*) realloc(clusterStrand, (strlen(strand)+1));
 					strcpy(clusterStrand, strand);
-					lastChrom = (char*) realloc(lastChrom, (strlen(chrom)+1)); 
+					if(strlen(chrom) > strlen(lastChrom)) lastChrom = (char*) realloc(lastChrom, (strlen(chrom)+1)); 
 					strcpy(lastChrom, chrom);
-					lastStrand = (char*) realloc(lastStrand, (strlen(strand)+1));
+					if(strlen(strand) > strlen(lastStrand)) lastStrand = (char*) realloc(lastStrand, (strlen(strand)+1));
 					strcpy(lastStrand, strand);
 					lastEnd    = end;
 				}					
