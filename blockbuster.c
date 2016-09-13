@@ -315,6 +315,7 @@ void read_bed_file(char *file)
 		
 		assignReadsToBlocks(thisCluster);
 		writeBlocks(thisCluster);
+		free(clusterChrom); free(clusterStrand); free(lastChrom); free(lastStrand);
 		freeList(thisCluster);
 		free(tmp_line);
 }
