@@ -230,6 +230,8 @@ void read_bed_file(char *file)
 						j++;
 						q = strtok(NULL, "|");
 					}
+                    free(info);
+
 					if(height != -1){height = height / freq;}
 					else{height = 1 / freq;}
 
@@ -287,7 +289,7 @@ void read_bed_file(char *file)
 					lastStrand = realloc(NULL, strlen(strand)+1);
 					strcpy(lastStrand, strand);
 					lastEnd    = end;
-				}					
+				} //end if(height>=tagFilter)
 				free(chrom); free(strand); free(id);
 				sol = 1;
 				// after processing the line we copy the empty string to the same memory address which we used and so we can start reading the new line
@@ -315,7 +317,7 @@ void read_bed_file(char *file)
 		writeBlocks(thisCluster);
 		freeList(thisCluster);
 		free(tmp_line);
-	}
+	} // end else
 	fclose(f);
 }
 
@@ -670,9 +672,9 @@ void freeList(struct read *anchor)
 	while (anchor != NULL) 
 	{
 		tmp = anchor->next;
-//		free(anchor->id);
-//		free(anchor->chrom);
-//		free(anchor->strand);
+		free(anchor->id);
+		free(anchor->chrom);
+		free(anchor->strand);
 //		free(anchor->next);
 		free(anchor);
 		anchor = tmp;
