@@ -27,13 +27,14 @@ char    *append(char*, char);
 
 /* GLOBAL VARIABLES */
 double pi = 3.14159265;
+char   *initChrom = "x";
+char   *clusterChrom; 
+char   *clusterStrand;
 int    clusterStart = -1; 
 int    clusterEnd = -1;
 double clusterHeight = 0;
 int    readCount = 0;
 int    tagCount = 0;
-char   *clusterChrom = "x";
-char   *clusterStrand = "x";
 int    clusterCounter = 0;
 
 /* USER VARIABLES */
@@ -55,6 +56,10 @@ int    type = 1;
 /* MAIN FUNCTION */
 int main(int argc, char *argv[])
 {  
+	clusterChrom = malloc(sizeof("x")+1);
+	strcpy(clusterChrom, initChrom);
+	clusterStrand = malloc(sizeof("x")+1);
+	strcpy(clusterChrom, initChrom);
 	// CHECK OPTIONAL ARGUMENTS
 	if((argc) == 1){printUsage(); exit(0);}
 	
@@ -125,8 +130,12 @@ void read_bed_file(char *file)
 	struct read *thisCluster = NULL;
 	
 	int  lastEnd = -1;
-	char *lastChrom = "x";
-	char *lastStrand = "x";
+	char* lastChrom = malloc(sizeof(initChrom));
+	char* lastStrand = malloc(sizeof(initChrom));
+
+	strcpy(lastChrom, initChrom);
+	strcpy(lastStrand, initChrom);
+
 
 	FILE *f;
 	f = fopen(file, "r");
@@ -280,13 +289,13 @@ void read_bed_file(char *file)
 					thisRead->next   = thisCluster; 
 					thisCluster      = thisRead; 
 					
-					clusterChrom = realloc(NULL, strlen(chrom)+1); 
+					clusterChrom = (char *) realloc(clusterChrom, sizeof(chrom));
 					strcpy(clusterChrom, chrom);
-					clusterStrand = realloc(NULL, strlen(strand)+1);
+					clusterStrand = (char *) realloc(clusterStrand, sizeof(strand));
 					strcpy(clusterStrand, strand);
-					lastChrom = realloc(NULL, strlen(chrom)+1); 
+					lastChrom = realloc(lastChrom, sizeof(chrom)); 
 					strcpy(lastChrom, chrom);
-					lastStrand = realloc(NULL, strlen(strand)+1);
+					lastStrand = realloc(lastStrand, sizeof(strand));
 					strcpy(lastStrand, strand);
 					lastEnd    = end;
 				} //end if(height>=tagFilter)
@@ -318,6 +327,8 @@ void read_bed_file(char *file)
 		freeList(thisCluster);
 		free(tmp_line);
 	} // end else
+    free(lastChrom);
+    free(lastStrand);
 	fclose(f);
 }
 
